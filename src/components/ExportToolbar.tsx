@@ -3,14 +3,11 @@ import {
   Printer,
   FileDown,
   FileText,
-  Download,
-  Share2,
   CheckCircle,
-  Sparkles,
-  Loader2
+  Loader2,
+  AlertTriangle
 } from 'lucide-react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { generatePdfSafely } from '../utils/pdfExport';
 
 interface ExportToolbarProps {
   onPrint: () => void;
@@ -27,11 +24,14 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
 }) => {
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Automatic Direct PDF Download using jsPDF & html2canvas
+  // Automatic Direct PDF Download using sanitized safe export
   const handleAutoDownloadPdf = async () => {
     try {
       setIsExportingPdf(true);
+      setErrorMessage(null);
+
       const element = document.getElementById(targetElementId);
       if (!element) {
         // Fallback to window.print if target element not found
@@ -40,48 +40,14 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
         return;
       }
 
-      // Hide no-print elements during capture
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        ignoreElements: (el) => el.classList.contains('no-print'),
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-      heightLeft -= pageHeight;
-
-      // Add subsequent pages if content overflows A4
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-        heightLeft -= pageHeight;
-      }
-
-      const safeFileName = `${documentTitle.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`;
-      pdf.save(safeFileName);
+      await generatePdfSafely(element, documentTitle);
 
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 3000);
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      // Fallback
+    } catch (error: any) {
+      console.warn('PDF direct export fallback triggered:', error);
+      setErrorMessage('Menggunakan mode cetak PDF browser.');
+      // Graceful fallback to browser print dialog
       window.print();
     } finally {
       setIsExportingPdf(false);
@@ -145,7 +111,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
         {/* Tombol Cetak Langsung */}
         <button
           onClick={onPrint}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-semibold transition-colors shadow-2xs"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-semibold transition-colors shadow-2xs cursor-pointer"
           title="Buka dialog cetak browser (Ctrl + P)"
         >
           <Printer className="w-4 h-4 text-slate-600" />
@@ -180,13 +146,20 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
         {/* Tombol Ekspor Word .doc */}
         <button
           onClick={handleExportWord}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs sm:text-sm font-semibold transition-colors"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
           title="Simpan sebagai file Microsoft Word (.doc)"
         >
           <FileText className="w-4 h-4 text-blue-600" />
           <span className="hidden sm:inline">Ekspor Word (.doc)</span>
         </button>
       </div>
+
+      {errorMessage && (
+        <div className="w-full text-xs text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 flex items-center gap-1.5 mt-2">
+          <AlertTriangle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
     </div>
   );
 };

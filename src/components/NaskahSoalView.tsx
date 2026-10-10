@@ -154,18 +154,18 @@ export const NaskahSoalView: React.FC<NaskahSoalViewProps> = ({
 
               {/* SPECIFIC RENDERING BASED ON QUESTION TYPE */}
 
-              {/* 1. Pilihan Ganda (A, B, C, D) */}
+              {/* 1. Pilihan Ganda (A, B, C, D) - Menurun ke bawah */}
               {q.bentukSoal === 'pilihan_ganda' && q.pilihan && (
-                <div className="ml-6 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-slate-800">
+                <div className="ml-6 flex flex-col space-y-2 text-xs sm:text-sm text-slate-900">
                   {q.pilihan.map((opt, optIdx) => (
                     <div
                       key={optIdx}
-                      className="p-2 rounded-lg bg-slate-50/70 border border-slate-200 flex items-start gap-2"
+                      className="flex items-start gap-2.5 py-1.5 px-2.5 rounded-lg bg-slate-50/80 border border-slate-200"
                     >
-                      <span className="font-bold text-slate-900">
+                      <span className="font-bold text-slate-900 w-5 flex-shrink-0">
                         {String.fromCharCode(65 + optIdx)}.
                       </span>
-                      <span className="flex-1">
+                      <span className="flex-1 leading-snug">
                         {opt.replace(/^[A-D]\.\s*/, '')}
                       </span>
                     </div>

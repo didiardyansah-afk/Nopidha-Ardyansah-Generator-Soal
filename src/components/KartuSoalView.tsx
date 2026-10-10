@@ -128,13 +128,13 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
             {q.pertanyaan}
           </div>
 
-          {/* Opsi jika PG */}
+          {/* Opsi jika PG (Menurun A, B, C, D) */}
           {q.bentukSoal === 'pilihan_ganda' && q.pilihan && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-xs">
+            <div className="flex flex-col space-y-1.5 mt-2 text-xs">
               {q.pilihan.map((p, pIdx) => (
-                <div key={pIdx} className="p-1.5 bg-slate-50 rounded border border-slate-200">
-                  <span className="font-bold mr-1">{String.fromCharCode(65 + pIdx)}.</span>
-                  {p.replace(/^[A-D]\.\s*/, '')}
+                <div key={pIdx} className="flex items-start gap-2 p-1.5 bg-slate-50 rounded border border-slate-200">
+                  <span className="font-bold w-4 flex-shrink-0 text-slate-900">{String.fromCharCode(65 + pIdx)}.</span>
+                  <span className="flex-1 text-slate-800">{p.replace(/^[A-D]\.\s*/, '')}</span>
                 </div>
               ))}
             </div>
