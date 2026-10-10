@@ -1,0 +1,6 @@
+{
+  "name": "SIP-IPA SMP: Generator & Bank Soal IPA SMP Terpadu",
+  "description": "Aplikasi profesional pembuatan soal IPA SMP terpadu Kurikulum Merdeka & Nasional lengkap dengan kisi-kisi, kartu soal, kunci jawaban, rubrik, norma penilaian skor 100, ekspor PDF otomatis. Karya Nopidha Ardyansah, S.Pd., M.Pd.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
