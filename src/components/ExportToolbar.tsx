@@ -6,16 +6,26 @@ import {
   CheckCircle,
   Loader2,
   FileCheck,
-  Info
+  Download,
+  Check
 } from 'lucide-react';
 import { printElementToPdf } from '../utils/printPdf';
 import { exportHtmlToWordDoc } from '../utils/wordExport';
+import {
+  downloadNaskahSoalPdf,
+  downloadKunciJawabanPdf,
+  downloadKartuSoalPdf,
+} from '../utils/directPdfDownload';
+import { SchoolIdentity, QuestionItem } from '../types';
 
 interface ExportToolbarProps {
   onPrint: () => void;
   documentTitle: string;
   targetElementId: string;
   activeTabName: string;
+  schoolInfo: SchoolIdentity;
+  questions: QuestionItem[];
+  activeTabKey: string;
 }
 
 export const ExportToolbar: React.FC<ExportToolbarProps> = ({
@@ -23,17 +33,42 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
   documentTitle,
   targetElementId,
   activeTabName,
+  schoolInfo,
+  questions,
+  activeTabKey,
 }) => {
-  const [isProcessingPdf, setIsProcessingPdf] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const [isExportingWord, setIsExportingWord] = useState(false);
-  const [showWordSuccess, setShowWordSuccess] = useState(false);
-  const [showPdfHint, setShowPdfHint] = useState(false);
+  const [downloadSuccessMsg, setDownloadSuccessMsg] = useState<string | null>(null);
 
-  // Trigger high-fidelity Print-to-PDF
-  const handleSavePdfOrPrint = async () => {
+  // 1. Automatic Direct PDF Download directly to user's device Downloads folder
+  const handleAutoDownloadPdf = async () => {
     try {
-      setIsProcessingPdf(true);
-      setShowPdfHint(true);
+      setIsDownloadingPdf(true);
+
+      if (activeTabKey === 'kunci') {
+        await downloadKunciJawabanPdf(schoolInfo, questions, documentTitle);
+      } else if (activeTabKey === 'kartu') {
+        await downloadKartuSoalPdf(schoolInfo, questions, documentTitle);
+      } else {
+        await downloadNaskahSoalPdf(schoolInfo, questions, documentTitle);
+      }
+
+      setDownloadSuccessMsg('File PDF beserta seluruh diagram/gambar lengkap berhasil tersimpan di folder Unduhan (Downloads)!');
+      setTimeout(() => setDownloadSuccessMsg(null), 4000);
+    } catch (err) {
+      console.warn('Direct PDF download fallback to print:', err);
+      handlePrintToPdf();
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
+  // 2. High-fidelity Print / Save to PDF Dialog with isolated A4 format
+  const handlePrintToPdf = async () => {
+    try {
+      setIsPrinting(true);
       await printElementToPdf({
         elementId: targetElementId,
         documentTitle: documentTitle,
@@ -44,18 +79,17 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
       console.warn('Print-to-PDF fallback:', err);
       window.print();
     } finally {
-      setIsProcessingPdf(false);
-      setTimeout(() => setShowPdfHint(false), 6000);
+      setIsPrinting(false);
     }
   };
 
-  // Export to Microsoft Word with A4 Paper and strict margins
+  // 3. Export to Microsoft Word with A4 Paper and strict margins
   const handleExportWordDoc = () => {
     try {
       setIsExportingWord(true);
       exportHtmlToWordDoc(targetElementId, documentTitle);
-      setShowWordSuccess(true);
-      setTimeout(() => setShowWordSuccess(false), 3500);
+      setDownloadSuccessMsg('Berkas Word (.doc) A4 berhasil diunduh!');
+      setTimeout(() => setDownloadSuccessMsg(null), 4000);
     } catch (err) {
       console.error('Word export error:', err);
     } finally {
@@ -74,49 +108,58 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-bold text-slate-900">
-                Menu Cetak & Ekspor Dokumen: {activeTabName}
+                Menu Cetak & Unduh Dokumen: {activeTabName}
               </h4>
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
-                Format Kertas A4 Resmi
+                Standar Kertas A4
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Standar margin dinas: Atas 2 cm, Bawah 2 cm, Kiri 2.5 cm (jilid), Kanan 2 cm.
+              Margin resmi: Atas 2 cm, Bawah 2 cm, Kiri 2.5 cm, Kanan 2 cm • Bebas dari tombol antarmuka/navigasi.
             </p>
           </div>
         </div>
 
         {/* Buttons Group */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Tombol Simpan PDF Otomatis (Print-to-PDF A4) */}
+          {/* Tombol Simpan PDF Otomatis (Tersimpan Langsung di Folder Downloads) */}
           <button
-            onClick={handleSavePdfOrPrint}
-            disabled={isProcessingPdf}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white text-xs sm:text-sm font-bold transition-all shadow-md hover:shadow-indigo-200 disabled:opacity-60 cursor-pointer"
-            title="Simpan dokumen sebagai file PDF A4 resmi"
+            onClick={handleAutoDownloadPdf}
+            disabled={isDownloadingPdf}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs sm:text-sm font-bold transition-all shadow-md hover:shadow-emerald-200 disabled:opacity-60 cursor-pointer"
+            title="Unduh otomatis file PDF langsung tersimpan di folder Downloads laptop/komputer"
           >
-            {isProcessingPdf ? (
+            {isDownloadingPdf ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Menyiapkan PDF A4...</span>
+                <span>Menyimpan ke Folder...</span>
               </>
             ) : (
               <>
-                <FileCheck className="w-4 h-4 text-cyan-300" />
+                <Download className="w-4 h-4 text-emerald-200" />
                 <span>Simpan PDF Otomatis</span>
               </>
             )}
           </button>
 
-          {/* Tombol Cetak Dokumen */}
+          {/* Tombol Cetak Dokumen (Buka Print Preview A4) */}
           <button
-            onClick={handleSavePdfOrPrint}
-            disabled={isProcessingPdf}
-            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-semibold transition-colors border border-slate-300/80 cursor-pointer"
-            title="Cetak langsung naskah ke printer"
+            onClick={handlePrintToPdf}
+            disabled={isPrinting}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold transition-colors shadow-sm cursor-pointer"
+            title="Buka jendela pratinjau cetak resmi A4"
           >
-            <Printer className="w-4 h-4 text-slate-700" />
-            <span>Cetak Dokumen</span>
+            {isPrinting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Menyiapkan Cetak...</span>
+              </>
+            ) : (
+              <>
+                <Printer className="w-4 h-4 text-cyan-200" />
+                <span>Cetak Dokumen</span>
+              </>
+            )}
           </button>
 
           {/* Tombol Ekspor Word .doc (A4 Tertata Rapi) */}
@@ -131,28 +174,21 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span>Menyusun Word...</span>
               </>
-            ) : showWordSuccess ? (
-              <>
-                <CheckCircle className="w-4 h-4 text-emerald-300" />
-                <span>Word Terunduh!</span>
-              </>
             ) : (
               <>
                 <FileText className="w-4 h-4 text-blue-200" />
-                <span>Ekspor Word (.doc) A4</span>
+                <span>Ekspor Word (.doc)</span>
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* PDF Hint Helper */}
-      {showPdfHint && (
-        <div className="mt-3 p-2.5 bg-indigo-50 border border-indigo-200 rounded-xl text-xs text-indigo-900 flex items-center gap-2 animate-in fade-in duration-200">
-          <Info className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-          <span>
-            <strong>Tips Simpan PDF:</strong> Pada jendela pratinjau cetak yang muncul, pilih opsi Tujuan: <em>"Simpan sebagai PDF"</em> (Save as PDF) lalu klik <strong>Simpan</strong>. Berkas tersimpan dengan margin A4 rapi tanpa elemen menu.
-          </span>
+      {/* Success Notification Bar */}
+      {downloadSuccessMsg && (
+        <div className="mt-3 p-2.5 bg-emerald-50 border border-emerald-300 rounded-xl text-xs text-emerald-900 flex items-center gap-2 animate-in fade-in duration-200">
+          <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+          <span className="font-semibold">{downloadSuccessMsg}</span>
         </div>
       )}
     </div>

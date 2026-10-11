@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Check, Trash2, Plus, Sparkles, Layers } from 'lucide-react';
+import { X, Check, Trash2, Plus, Sparkles, Layers, Image as ImageIcon, Upload } from 'lucide-react';
 import { QuestionItem, QuestionType, CognitiveLevel, LearningExperience, DifficultyLevel } from '../types';
+import { SCIENTIFIC_SVGS } from '../data/curriculumData';
 
 interface EditQuestionModalProps {
   question: QuestionItem | null;
@@ -33,6 +34,73 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
   const handleRemoveOption = (idx: number) => {
     const nextPilihan = (formData.pilihan || []).filter((_, i) => i !== idx);
     setFormData({ ...formData, pilihan: nextPilihan });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setFormData({
+          ...formData,
+          gambarUrl: reader.result as string,
+          gambarSvg: undefined,
+          gambarDeskripsi: formData.gambarDeskripsi || file.name.replace(/\.[^/.]+$/, ''),
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSelectPresetSvg = (key: string) => {
+    const svgMap: Record<string, { svg: string; desc: string }> = {
+      selTumbuhan: {
+        svg: SCIENTIFIC_SVGS.selTumbuhan,
+        desc: 'Struktur mikroskopis sel tumbuhan dengan organel dinding sel (X), vakuola, kloroplas, dan nukleus.',
+      },
+      mikroskop: {
+        svg: SCIENTIFIC_SVGS.mikroskop,
+        desc: 'Komponen mikroskop optik laboratorium: Lensa okuler (A), Lensa objektif (B), Meja preparat (C), Makrometer (D).',
+      },
+      tuasPengungkit: {
+        svg: SCIENTIFIC_SVGS.tuasPengungkit,
+        desc: 'Skema pesawat sederhana tuas jenis 1: Beban W = 600 N, lengan beban lb = 50 cm, lengan kuasa lk = 150 cm.',
+      },
+      rangkaianListrik: {
+        svg: SCIENTIFIC_SVGS.rangkaianListrik,
+        desc: 'Skema rangkaian listrik tertutup seri dua hambatan R1 = 4 Ω dan R2 = 2 Ω dengan tegangan V = 12 Volt.',
+      },
+      hukumArchimedes: {
+        svg: SCIENTIFIC_SVGS.hukumArchimedes,
+        desc: 'Bejana zat cair berisi benda A (terapung), benda B (melayang), dan benda C (tenggelam di dasar bejana).',
+      },
+      sistemPencernaan: {
+        svg: SCIENTIFIC_SVGS.sistemPencernaan,
+        desc: 'Anatomi organ pencernaan manusia: Esofagus, Lambung (X), Hati, Usus Halus, dan Usus Besar.',
+      },
+      fotosintesisIngenhousz: {
+        svg: SCIENTIFIC_SVGS.fotosintesisIngenhousz,
+        desc: 'Eksperimen fotosintesis Ingenhousz tanaman Hydrilla membuktikan pelepasan gas oksigen (O2) di bawah sinar.',
+      },
+    };
+
+    if (svgMap[key]) {
+      setFormData({
+        ...formData,
+        gambarSvg: svgMap[key].svg,
+        gambarUrl: undefined,
+        gambarDeskripsi: svgMap[key].desc,
+      });
+    }
+  };
+
+  const handleClearImage = () => {
+    setFormData({
+      ...formData,
+      gambarSvg: undefined,
+      gambarUrl: undefined,
+      gambarDeskripsi: '',
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -191,6 +259,92 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
               className="w-full px-3 py-2 rounded-lg border border-slate-300 leading-relaxed font-sans"
               placeholder="Contoh: Perhatikan hasil percobaan laju fotosintesis tanaman Hydrilla berikut..."
             />
+          </div>
+
+          {/* Ilustrasi / Diagram Ilmiah Soal */}
+          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-indigo-600" />
+                <span>Gambar / Diagram Stimulus Soal</span>
+              </label>
+              {(formData.gambarSvg || formData.gambarUrl) && (
+                <button
+                  type="button"
+                  onClick={handleClearImage}
+                  className="text-[11px] text-rose-600 hover:text-rose-800 font-semibold flex items-center gap-1 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> Hapus Gambar
+                </button>
+              )}
+            </div>
+
+            {/* Current Image / SVG Preview */}
+            {(formData.gambarUrl || formData.gambarSvg) ? (
+              <div className="p-2.5 bg-white rounded-lg border border-slate-300 max-w-md mx-auto text-center">
+                {formData.gambarUrl ? (
+                  <img
+                    src={formData.gambarUrl}
+                    alt="Pratinjau Diagram"
+                    className="max-h-48 mx-auto object-contain rounded"
+                  />
+                ) : formData.gambarSvg ? (
+                  <div
+                    dangerouslySetInnerHTML={{ __html: formData.gambarSvg }}
+                    className="overflow-hidden flex items-center justify-center max-h-48"
+                  />
+                ) : null}
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    value={formData.gambarDeskripsi || ''}
+                    onChange={(e) => setFormData({ ...formData, gambarDeskripsi: e.target.value })}
+                    placeholder="Keterangan gambar (misal: Gambar: Penampang melintang batang dikotil)"
+                    className="w-full text-xs px-2.5 py-1.5 rounded border border-slate-300 text-slate-700 italic"
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500 italic">
+                Soal ini saat ini berupa teks saja (tidak memiliki diagram). Anda dapat menyematkan diagram sains dari bank kurikulum atau mengunggah gambar sendiri.
+              </p>
+            )}
+
+            {/* Actions: Upload or Select Preset */}
+            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-200">
+              <div className="relative">
+                <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold cursor-pointer border border-indigo-200 transition-colors">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Unggah File Gambar (PNG/JPG)</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="sr-only"
+                  />
+                </label>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-500">atau</span>
+                <select
+                  onChange={(e) => {
+                    if (e.target.value) handleSelectPresetSvg(e.target.value);
+                  }}
+                  defaultValue=""
+                  className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700"
+                >
+                  <option value="" disabled>-- Pilih Diagram Sains SMP Siap Pakai --</option>
+                  <option value="selTumbuhan">Sel Tumbuhan (Organel & Dinding Sel)</option>
+                  <option value="mikroskop">Mikroskop Optik & Komponennya</option>
+                  <option value="tuasPengungkit">Tuas / Pengungkit Pesawat Sederhana</option>
+                  <option value="rangkaianListrik">Rangkaian Listrik Seri (Hukum Ohm)</option>
+                  <option value="hukumArchimedes">Hukum Archimedes & Bejana Fluida</option>
+                  <option value="sistemPencernaan">Sistem Organ Pencernaan Manusia</option>
+                  <option value="fotosintesisIngenhousz">Percobaan Fotosintesis Ingenhousz</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           {/* Pertanyaan */}

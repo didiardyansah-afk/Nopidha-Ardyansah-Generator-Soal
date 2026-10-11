@@ -27,9 +27,9 @@ export function printElementToPdf(options: PrintPdfOptions = {}): Promise<void> 
         throw new Error(`Element with id "${elementId}" not found.`);
       }
 
-      // Clone content and remove any elements marked with .no-print
+      // Clone content and strictly strip all interface buttons, navs, and no-print bars
       const clone = sourceElement.cloneNode(true) as HTMLElement;
-      const noPrintElements = clone.querySelectorAll('.no-print');
+      const noPrintElements = clone.querySelectorAll('.no-print, button, nav, header, input, .admin-bar');
       noPrintElements.forEach((el) => el.remove());
 
       // Create an invisible iframe for isolated printing
@@ -54,11 +54,26 @@ export function printElementToPdf(options: PrintPdfOptions = {}): Promise<void> 
       // Set document title so browser uses it as default PDF filename when saving
       iframeDoc.title = documentTitle;
 
-      // Extract existing stylesheets and font links from parent document
+      // Extract existing stylesheets, styles, and font links from parent document
       const headLinks: string[] = [];
-      const parentLinks = document.querySelectorAll('link[rel="stylesheet"], link[rel="preconnect"]');
-      parentLinks.forEach((link) => {
-        headLinks.push(link.outerHTML);
+      const parentNodes = document.querySelectorAll('link[rel="stylesheet"], link[rel="preconnect"], style');
+      parentNodes.forEach((node) => {
+        headLinks.push(node.outerHTML);
+      });
+
+      // Ensure all SVGs in cloned content have explicit attributes for printing
+      clone.querySelectorAll('svg').forEach((svg) => {
+        svg.setAttribute('style', 'max-width: 100% !important; height: auto !important; display: block !important; margin: 8px auto !important;');
+        if (!svg.getAttribute('width') || !svg.getAttribute('height')) {
+          const vb = svg.getAttribute('viewBox');
+          if (vb) {
+            const parts = vb.trim().split(/[\s,]+/);
+            if (parts.length >= 4) {
+              svg.setAttribute('width', parts[2]);
+              svg.setAttribute('height', parts[3]);
+            }
+          }
+        }
       });
 
       // Construct professional print CSS that overrides background/color resets
@@ -165,13 +180,15 @@ export function printElementToPdf(options: PrintPdfOptions = {}): Promise<void> 
             display: none !important;
           }
 
-          /* SVGs must scale crisply */
-          svg {
-            max-width: 100% !important;
+          /* Images and SVGs must scale crisply and avoid break-inside */
+          img, svg {
+            max-width: 90% !important;
             height: auto !important;
             display: block !important;
             margin-left: auto !important;
             margin-right: auto !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
         </style>
       `;

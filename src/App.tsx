@@ -108,23 +108,49 @@ export default function App() {
       const result = await response.json();
 
       if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-        // Attach diagrams if needed
+        // Attach diagrams and descriptive captions
         const enhancedQuestions = result.data.map((q: QuestionItem, i: number) => {
           let svg = q.gambarSvg;
+          let deskripsi = q.gambarDeskripsi;
           if (examConfig.sertakanGambar && i < examConfig.jumlahSoalBergambar && !svg) {
-            // Pick a matching SVG from catalog
-            const svgs = [
-              SCIENTIFIC_SVGS.selTumbuhan,
-              SCIENTIFIC_SVGS.mikroskop,
-              SCIENTIFIC_SVGS.tuasPengungkit,
-              SCIENTIFIC_SVGS.rangkaianListrik,
-              SCIENTIFIC_SVGS.hukumArchimedes,
+            const catalog = [
+              {
+                svg: SCIENTIFIC_SVGS.selTumbuhan,
+                desc: 'Struktur sel tumbuhan dengan penunjuk dinding sel (X), vakuola, dan nukleus.',
+              },
+              {
+                svg: SCIENTIFIC_SVGS.mikroskop,
+                desc: 'Komponen mikroskop optik: Lensa Okuler (A), Lensa Objektif (B), Meja Preparat (C), Makrometer (D).',
+              },
+              {
+                svg: SCIENTIFIC_SVGS.tuasPengungkit,
+                desc: 'Skema tuas jenis 1: Beban W = 600 N, lengan beban lb = 50 cm, lengan kuasa lk = 150 cm.',
+              },
+              {
+                svg: SCIENTIFIC_SVGS.rangkaianListrik,
+                desc: 'Rangkaian listrik seri dua resistor R1 = 4 Ω dan R2 = 2 Ω dengan sumber tegangan 12 Volt.',
+              },
+              {
+                svg: SCIENTIFIC_SVGS.hukumArchimedes,
+                desc: 'Bejana zat cair berisi benda A (terapung), benda B (melayang), dan benda C (tenggelam).',
+              },
+              {
+                svg: SCIENTIFIC_SVGS.sistemPencernaan,
+                desc: 'Anatomi sistem pencernaan: Esofagus, Lambung (X), Hati, Usus Halus, dan Usus Besar.',
+              },
+              {
+                svg: SCIENTIFIC_SVGS.fotosintesisIngenhousz,
+                desc: 'Percobaan fotosintesis Ingenhousz tanaman Hydrilla sp. melepaskan gelembung gas oksigen (O2).',
+              },
             ];
-            svg = svgs[i % svgs.length];
+            const item = catalog[i % catalog.length];
+            svg = item.svg;
+            if (!deskripsi) deskripsi = item.desc;
           }
           return {
             ...q,
             gambarSvg: svg,
+            gambarDeskripsi: deskripsi,
             nomor: i + 1,
           };
         });
@@ -366,6 +392,9 @@ export default function App() {
             documentTitle={getExportTitle()}
             targetElementId="printable-content"
             activeTabName={tabTitles[activeTab]}
+            schoolInfo={schoolInfo}
+            questions={questions}
+            activeTabKey={activeTab}
           />
         )}
 

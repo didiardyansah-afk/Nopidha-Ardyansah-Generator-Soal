@@ -153,13 +153,11 @@ export const SILABUS_IPA_SMP: MaterialTopicOption[] = [
   },
 ];
 
-// High quality scientific SVG diagrams for IPA SMP
+// High quality scientific SVG diagrams for IPA SMP with explicit dimensions & vector paths
 export const SCIENTIFIC_SVGS = {
   selTumbuhan: `
-    <svg viewBox="0 0 400 240" class="w-full h-auto max-h-56 mx-auto bg-emerald-50/50 rounded-lg border border-emerald-200">
-      <defs>
-        <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%"><feDropShadow dx="1" dy="1" stdDeviation="2" flood-opacity="0.15"/></filter>
-      </defs>
+    <svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240" class="w-full h-auto max-h-56 mx-auto bg-emerald-50 rounded-lg border border-emerald-200">
+      <rect width="100%" height="100%" fill="#f0fdf4"/>
       <!-- Dinding Sel & Membran Sel -->
       <polygon points="50,30 350,30 380,120 350,210 50,210 20,120" fill="#d1fae5" stroke="#059669" stroke-width="6" stroke-linejoin="round"/>
       <polygon points="58,38 342,38 370,120 342,202 58,202 30,120" fill="#ecfdf5" stroke="#10b981" stroke-width="2.5" stroke-linejoin="round"/>
@@ -201,7 +199,8 @@ export const SCIENTIFIC_SVGS = {
   `,
 
   mikroskop: `
-    <svg viewBox="0 0 360 260" class="w-full h-auto max-h-56 mx-auto bg-slate-50 rounded-lg border border-slate-200">
+    <svg xmlns="http://www.w3.org/2000/svg" width="360" height="260" viewBox="0 0 360 260" class="w-full h-auto max-h-56 mx-auto bg-slate-50 rounded-lg border border-slate-200">
+      <rect width="100%" height="100%" fill="#f8fafc"/>
       <!-- Alas Mikroskop -->
       <ellipse cx="180" cy="235" rx="90" ry="16" fill="#334155" stroke="#1e293b" stroke-width="2"/>
       <rect x="140" y="220" width="80" height="15" fill="#475569"/>
@@ -248,7 +247,8 @@ export const SCIENTIFIC_SVGS = {
   `,
 
   tuasPengungkit: `
-    <svg viewBox="0 0 380 180" class="w-full h-auto max-h-48 mx-auto bg-amber-50/40 rounded-lg border border-amber-200">
+    <svg xmlns="http://www.w3.org/2000/svg" width="380" height="180" viewBox="0 0 380 180" class="w-full h-auto max-h-48 mx-auto bg-amber-50 rounded-lg border border-amber-200">
+      <rect width="100%" height="100%" fill="#fffbeb"/>
       <!-- Garis Batang Tuas -->
       <rect x="40" y="80" width="300" height="12" fill="#78350f" rx="3" stroke="#451a03" stroke-width="1.5"/>
 
@@ -262,7 +262,7 @@ export const SCIENTIFIC_SVGS = {
       <text x="52" y="66" font-size="11" font-family="sans-serif" font-weight="bold" fill="#ffffff">W = 600 N</text>
 
       <!-- Gaya Kuasa (F) di ujung kanan -->
-      <path d="M320,30 L320,74" stroke="#16a34a" stroke-width="3.5" marker-end="url(#arrow)"/>
+      <path d="M320,30 L320,74" stroke="#16a34a" stroke-width="3.5"/>
       <polygon points="320,78 314,66 326,66" fill="#16a34a"/>
       <text x="305" y="24" font-size="12" font-family="sans-serif" font-weight="bold" fill="#15803d">F = ?</text>
 
@@ -276,7 +276,8 @@ export const SCIENTIFIC_SVGS = {
   `,
 
   rangkaianListrik: `
-    <svg viewBox="0 0 380 200" class="w-full h-auto max-h-50 mx-auto bg-blue-50/40 rounded-lg border border-blue-200">
+    <svg xmlns="http://www.w3.org/2000/svg" width="380" height="200" viewBox="0 0 380 200" class="w-full h-auto max-h-50 mx-auto bg-blue-50 rounded-lg border border-blue-200">
+      <rect width="100%" height="100%" fill="#eff6ff"/>
       <!-- Kabel Utama Persegi -->
       <rect x="50" y="40" width="280" height="120" fill="none" stroke="#334155" stroke-width="3" rx="8"/>
 
@@ -304,7 +305,8 @@ export const SCIENTIFIC_SVGS = {
   `,
 
   hukumArchimedes: `
-    <svg viewBox="0 0 380 200" class="w-full h-auto max-h-50 mx-auto bg-cyan-50/40 rounded-lg border border-cyan-200">
+    <svg xmlns="http://www.w3.org/2000/svg" width="380" height="200" viewBox="0 0 380 200" class="w-full h-auto max-h-50 mx-auto bg-cyan-50 rounded-lg border border-cyan-200">
+      <rect width="100%" height="100%" fill="#ecfeff"/>
       <!-- Gelas Beaker -->
       <path d="M60,30 L60,170 Q60,185 80,185 L300,185 Q320,185 320,170 L320,30" fill="none" stroke="#475569" stroke-width="3"/>
       
@@ -328,6 +330,69 @@ export const SCIENTIFIC_SVGS = {
       <text x="245" y="145" font-size="10" font-family="sans-serif" fill="#0369a1">Tenggelam</text>
 
       <text x="80" y="25" font-size="11" font-family="sans-serif" font-weight="bold" fill="#0369a1">Massa Jenis Zat Cair = ρ_cair</text>
+    </svg>
+  `,
+
+  sistemPencernaan: `
+    <svg xmlns="http://www.w3.org/2000/svg" width="380" height="230" viewBox="0 0 380 230" class="w-full h-auto max-h-56 mx-auto bg-rose-50 rounded-lg border border-rose-200">
+      <rect width="100%" height="100%" fill="#fff1f2"/>
+      <!-- Kerongkongan / Esofagus -->
+      <rect x="178" y="15" width="24" height="60" fill="#fda4af" stroke="#e11d48" stroke-width="1.5" rx="3"/>
+      <text x="110" y="35" font-size="10" font-family="sans-serif" fill="#9f1239">1. Esofagus</text>
+      <line x1="160" y1="35" x2="178" y2="35" stroke="#e11d48" stroke-width="1"/>
+
+      <!-- Lambung (Bagian X) -->
+      <path d="M190,75 C230,75 255,100 245,130 C235,155 185,150 170,135 C160,115 170,85 190,75 Z" fill="#f43f5e" stroke="#be123c" stroke-width="2"/>
+      <text x="195" y="115" font-size="12" font-family="sans-serif" font-weight="bold" fill="#ffffff">Lambung (X)</text>
+
+      <!-- Hati / Liver di sebelah kiri -->
+      <path d="M110,80 C150,75 165,100 160,125 C145,135 105,125 110,80 Z" fill="#b91c1c" stroke="#991b1b" stroke-width="1.5"/>
+      <text x="115" y="105" font-size="10" font-family="sans-serif" font-weight="bold" fill="#fef2f2">Hati</text>
+
+      <!-- Usus Halus -->
+      <path d="M175,145 Q210,140 195,160 Q170,175 200,185 Q220,195 185,210" fill="none" stroke="#fb923c" stroke-width="10" stroke-linecap="round"/>
+      <text x="235" y="175" font-size="10" font-family="sans-serif" font-weight="bold" fill="#c2410c">Usus Halus</text>
+      <line x1="230" y1="172" x2="205" y2="172" stroke="#ea580c" stroke-width="1"/>
+
+      <!-- Usus Besar -->
+      <path d="M145,140 L145,215 L235,215 L235,140" fill="none" stroke="#84cc16" stroke-width="5" stroke-dasharray="4,2"/>
+      <text x="75" y="180" font-size="10" font-family="sans-serif" font-weight="bold" fill="#4d7c0f">Usus Besar</text>
+      <line x1="125" y1="178" x2="145" y2="178" stroke="#65a30d" stroke-width="1"/>
+    </svg>
+  `,
+
+  fotosintesisIngenhousz: `
+    <svg xmlns="http://www.w3.org/2000/svg" width="380" height="210" viewBox="0 0 380 210" class="w-full h-auto max-h-52 mx-auto bg-emerald-50 rounded-lg border border-emerald-200">
+      <rect width="100%" height="100%" fill="#ecfdf5"/>
+      <!-- Gelas Kimia Besar -->
+      <rect x="70" y="40" width="240" height="150" fill="#e0f2fe" opacity="0.7" stroke="#0284c7" stroke-width="2.5" rx="4"/>
+      
+      <!-- Corong Kaca Terbalik -->
+      <polygon points="120,175 260,175 195,95 185,95" fill="#bae6fd" stroke="#0369a1" stroke-width="2"/>
+      <!-- Pipa Leher Corong -->
+      <rect x="185" y="45" width="10" height="50" fill="#bae6fd" stroke="#0369a1" stroke-width="2"/>
+
+      <!-- Tabung Reaksi Penampung Oksigen -->
+      <rect x="180" y="25" width="20" height="65" fill="#f0f9ff" stroke="#0284c7" stroke-width="2" rx="3"/>
+      <!-- Ruang Gas Oksigen O2 di ujung atas -->
+      <rect x="182" y="27" width="16" height="20" fill="#fed7aa" stroke="#f97316" stroke-width="1"/>
+      <text x="210" y="38" font-size="10" font-family="sans-serif" font-weight="bold" fill="#c2410c">Gas O2</text>
+      <line x1="205" y1="36" x2="198" y2="36" stroke="#ea580c" stroke-width="1"/>
+
+      <!-- Gelembung-gelembung Gas -->
+      <circle cx="190" cy="55" r="2.5" fill="#ffffff" stroke="#0284c7"/>
+      <circle cx="191" cy="65" r="2" fill="#ffffff" stroke="#0284c7"/>
+      <circle cx="189" cy="78" r="3" fill="#ffffff" stroke="#0284c7"/>
+      <circle cx="192" cy="88" r="2.5" fill="#ffffff" stroke="#0284c7"/>
+
+      <!-- Tanaman Hydrilla verticillata di dalam corong -->
+      <path d="M150,170 Q160,140 170,165 Q180,135 190,168 Q200,140 210,167 Q220,135 230,170" fill="none" stroke="#15803d" stroke-width="4"/>
+      <text x="140" y="195" font-size="10" font-family="sans-serif" font-weight="bold" fill="#166534">Tanaman Hydrilla sp.</text>
+
+      <!-- Sinar Matahari / Cahaya -->
+      <circle cx="45" cy="35" r="14" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+      <line x1="60" y1="45" x2="85" y2="65" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3,2"/>
+      <text x="25" y="65" font-size="9" font-family="sans-serif" fill="#b45309">Cahaya</text>
     </svg>
   `
 };

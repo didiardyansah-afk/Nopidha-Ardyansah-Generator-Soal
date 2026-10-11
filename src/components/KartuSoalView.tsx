@@ -118,11 +118,25 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
             </div>
           )}
 
-          {q.gambarSvg && (
+          {q.gambarUrl ? (
+            <div className="my-2.5 p-2 bg-white rounded border border-slate-200 max-w-sm mx-auto">
+              <img
+                src={q.gambarUrl}
+                alt={q.gambarDeskripsi || 'Gambar Soal'}
+                className="max-h-48 mx-auto object-contain rounded"
+              />
+              {q.gambarDeskripsi && (
+                <p className="text-[10px] text-slate-500 text-center mt-1 italic">{q.gambarDeskripsi}</p>
+              )}
+            </div>
+          ) : q.gambarSvg ? (
             <div className="my-2.5 p-2 bg-white rounded border border-slate-200 max-w-sm mx-auto">
               <div dangerouslySetInnerHTML={{ __html: q.gambarSvg }} />
+              {q.gambarDeskripsi && (
+                <p className="text-[10px] text-slate-500 text-center mt-1 italic">{q.gambarDeskripsi}</p>
+              )}
             </div>
-          )}
+          ) : null}
 
           <div className="font-medium text-slate-900 leading-relaxed whitespace-pre-line mb-2">
             {q.pertanyaan}

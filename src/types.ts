@@ -54,6 +54,7 @@ export interface QuestionItem {
   stimulus?: string; // Bacaan, data tabel, atau konteks sains
   pertanyaan: string;
   gambarSvg?: string; // Diagram/ilustrasi ilmiah dalam SVG
+  gambarUrl?: string; // URL atau data:image base64 gambar yang diunggah pengguna
   gambarDeskripsi?: string;
   
   // Spesifik bentuk soal:

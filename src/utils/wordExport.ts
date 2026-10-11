@@ -1,3 +1,5 @@
+import { convertSvgOrImageToPng } from './imageExportUtils';
+
 /**
  * Professional Microsoft Word (.doc) Export Utility
  * Guarantees A4 page size and exact official school margins:
@@ -5,9 +7,10 @@
  * - Bottom: 2.0 cm (56.7 pt)
  * - Left: 2.5 cm (70.9 pt - standard binding margin)
  * - Right: 2.0 cm (56.7 pt)
+ * Converts all SVG diagrams to high-resolution PNG images so they render inside Word.
  */
 
-export function exportHtmlToWordDoc(elementId: string, documentTitle: string) {
+export async function exportHtmlToWordDoc(elementId: string, documentTitle: string): Promise<void> {
   const element = document.getElementById(elementId);
   if (!element) {
     console.error(`Element with id "${elementId}" not found for Word export.`);
@@ -16,24 +19,28 @@ export function exportHtmlToWordDoc(elementId: string, documentTitle: string) {
 
   // Clone element and strip all interactive / non-printable elements
   const clone = element.cloneNode(true) as HTMLElement;
-  const noPrintEls = clone.querySelectorAll('.no-print, button, input[type="file"]');
+  const noPrintEls = clone.querySelectorAll('.no-print, button, input[type="file"], input, nav, header');
   noPrintEls.forEach((el) => el.remove());
 
-  // Convert SVGs to high-resolution data URIs or clean blocks
-  const svgs = clone.querySelectorAll('svg');
-  svgs.forEach((svg) => {
-    try {
-      const s = new XMLSerializer().serializeToString(svg);
-      const encoded = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
-      const img = document.createElement('img');
-      img.src = encoded;
-      img.setAttribute('width', '380');
-      img.setAttribute('style', 'display: block; margin: 8pt auto; max-width: 90%;');
-      svg.parentNode?.replaceChild(img, svg);
-    } catch {
-      // Keep SVG if serializer fails
-    }
-  });
+  // Convert SVGs to PNG data URIs so Microsoft Word can render them
+  const svgs = Array.from(clone.querySelectorAll('svg'));
+  await Promise.all(
+    svgs.map(async (svg) => {
+      try {
+        const svgString = new XMLSerializer().serializeToString(svg);
+        const imgData = await convertSvgOrImageToPng(svgString, 500, 260);
+        if (imgData && imgData.pngUrl) {
+          const img = document.createElement('img');
+          img.src = imgData.pngUrl;
+          img.setAttribute('width', '380');
+          img.setAttribute('style', 'display: block; margin: 8pt auto; max-width: 90%; border: 1px solid #e2e8f0; border-radius: 4px;');
+          svg.parentNode?.replaceChild(img, svg);
+        }
+      } catch (err) {
+        console.warn('SVG to PNG for Word failed:', err);
+      }
+    })
+  );
 
   const contentHtml = clone.innerHTML;
 
@@ -128,6 +135,8 @@ xmlns="http://www.w3.org/TR/REC-html40">
     img {
       max-width: 100%;
       height: auto;
+      display: block;
+      margin: 6pt auto;
     }
     .no-print {
       display: none !important;

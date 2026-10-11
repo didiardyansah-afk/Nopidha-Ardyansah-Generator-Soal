@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SchoolIdentity, QuestionItem, QuestionType } from '../types';
 import { KopSurat } from './KopSurat';
-import { Edit3, Trash2, Plus, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Edit3, Trash2, Plus, Sparkles, Image as ImageIcon, Eye, Edit } from 'lucide-react';
 
 interface NaskahSoalViewProps {
   schoolInfo: SchoolIdentity;
@@ -18,6 +18,9 @@ export const NaskahSoalView: React.FC<NaskahSoalViewProps> = ({
   onDeleteQuestion,
   onAddNewQuestion,
 }) => {
+  // Mode toggle: Clean Student Preview vs Teacher Admin Editor
+  const [isCleanPreview, setIsCleanPreview] = useState(false);
+
   // Summary of question types
   const typeSet = new Set(questions.map((q) => q.bentukSoal));
   const typeMap: Record<QuestionType, string> = {
@@ -41,24 +44,49 @@ export const NaskahSoalView: React.FC<NaskahSoalViewProps> = ({
         showPetunjukUmum={true}
       />
 
-      {/* Admin Action Bar */}
+      {/* View Mode Toggle & Admin Bar */}
       <div className="no-print my-4 p-3 bg-indigo-50/70 border border-indigo-200 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 text-indigo-900">
-          <Sparkles className="w-4 h-4 text-indigo-600" />
+          <Sparkles className="w-4 h-4 text-indigo-600 flex-shrink-0" />
           <span className="font-semibold">
-            Mode Naskah Soal Siswa ({questions.length} Butir Soal Terdaftar)
-          </span>
-          <span className="text-slate-500 hidden sm:inline">
-            • Anda dapat mengedit teks soal, opsi, diagram, dan kunci jawaban kapan saja.
+            Naskah Soal Siswa ({questions.length} Butir Soal Terdaftar)
           </span>
         </div>
-        <button
-          onClick={onAddNewQuestion}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors shadow-2xs"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Tambah Butir Soal Baru
-        </button>
+
+        <div className="flex items-center gap-2">
+          {/* Toggle Clean Preview vs Edit Mode */}
+          <button
+            onClick={() => setIsCleanPreview(!isCleanPreview)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border ${
+              isCleanPreview
+                ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
+                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+            }`}
+            title="Sembunyikan tombol edit dan bilah admin untuk tampilan naskah bersih siap cetak"
+          >
+            {isCleanPreview ? (
+              <>
+                <Eye className="w-3.5 h-3.5" />
+                <span>Mode: Pratinjau Naskah Bersih (Tanpa Tombol)</span>
+              </>
+            ) : (
+              <>
+                <Edit className="w-3.5 h-3.5" />
+                <span>Mode: Editor Guru (Tombol Tampil)</span>
+              </>
+            )}
+          </button>
+
+          {!isCleanPreview && (
+            <button
+              onClick={onAddNewQuestion}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors shadow-2xs cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Tambah Butir Soal</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* List of Questions */}
@@ -71,53 +99,62 @@ export const NaskahSoalView: React.FC<NaskahSoalViewProps> = ({
           questions.map((q, idx) => (
             <div
               key={q.id || idx}
-              className="group relative pb-6 border-b border-slate-200 last:border-b-0"
+              data-question-id={q.id}
+              className="group relative pb-6 border-b border-slate-200 last:border-b-0 break-inside-avoid page-break-inside-avoid"
             >
-              {/* Question Header & Badges */}
+              {/* Question Header */}
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-bold text-base text-slate-900">
                     {idx + 1}.
                   </span>
-                  <span className="no-print text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                    {typeMap[q.bentukSoal] || q.bentukSoal}
-                  </span>
-                  <span
-                    className={`no-print text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                      q.cognitiveLevel === 'HOTS'
-                        ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                        : q.cognitiveLevel === 'MOTS'
-                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                        : 'bg-blue-100 text-blue-800 border border-blue-200'
-                    }`}
-                  >
-                    {q.cognitiveLevel}
-                  </span>
-                  <span className="no-print text-[11px] font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
-                    {q.learningExperience}
-                  </span>
-                  <span className="no-print text-[11px] text-slate-500">
-                    Bobot: {q.bobotSkor} poin
-                  </span>
+
+                  {/* Metadata pills only shown in teacher editor mode */}
+                  {!isCleanPreview && (
+                    <>
+                      <span className="no-print text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                        {typeMap[q.bentukSoal] || q.bentukSoal}
+                      </span>
+                      <span
+                        className={`no-print text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                          q.cognitiveLevel === 'HOTS'
+                            ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                            : q.cognitiveLevel === 'MOTS'
+                            ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                            : 'bg-blue-100 text-blue-800 border border-blue-200'
+                        }`}
+                      >
+                        {q.cognitiveLevel}
+                      </span>
+                      <span className="no-print text-[11px] font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                        {q.learningExperience}
+                      </span>
+                      <span className="no-print text-[11px] text-slate-500">
+                        Bobot: {q.bobotSkor} poin
+                      </span>
+                    </>
+                  )}
                 </div>
 
-                {/* Edit & Delete Actions (Hidden in Print) */}
-                <div className="no-print flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => onEditQuestion(q)}
-                    className="p-1.5 rounded-md hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 transition-colors"
-                    title="Edit butir soal ini"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => onDeleteQuestion(q.id)}
-                    className="p-1.5 rounded-md hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors"
-                    title="Hapus butir soal"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                {/* Edit & Delete Actions (Hidden in clean preview and print) */}
+                {!isCleanPreview && (
+                  <div className="no-print flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => onEditQuestion(q)}
+                      className="p-1.5 rounded-md hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+                      title="Edit butir soal ini"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => onDeleteQuestion(q.id)}
+                      className="p-1.5 rounded-md hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors cursor-pointer"
+                      title="Hapus butir soal"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Stimulus / Context */}
@@ -128,8 +165,21 @@ export const NaskahSoalView: React.FC<NaskahSoalViewProps> = ({
               )}
 
               {/* Scientific Diagram / Image */}
-              {q.gambarSvg ? (
-                <div className="ml-6 my-3 p-2 bg-white rounded-lg border border-slate-200 max-w-lg">
+              {q.gambarUrl ? (
+                <div className="ml-6 my-3 p-2.5 bg-white rounded-xl border border-slate-200 max-w-lg shadow-2xs">
+                  <img
+                    src={q.gambarUrl}
+                    alt={q.gambarDeskripsi || 'Diagram Soal'}
+                    className="max-h-56 mx-auto object-contain rounded"
+                  />
+                  {q.gambarDeskripsi && (
+                    <p className="text-[11px] text-slate-500 text-center mt-1.5 italic">
+                      {q.gambarDeskripsi}
+                    </p>
+                  )}
+                </div>
+              ) : q.gambarSvg ? (
+                <div className="ml-6 my-3 p-2.5 bg-white rounded-xl border border-slate-200 max-w-lg shadow-2xs">
                   <div
                     dangerouslySetInnerHTML={{ __html: q.gambarSvg }}
                     className="overflow-hidden flex items-center justify-center"
@@ -281,7 +331,7 @@ export const NaskahSoalView: React.FC<NaskahSoalViewProps> = ({
       </div>
 
       {/* Signature & Validation Footer for Print */}
-      <div className="mt-12 pt-6 border-t border-slate-300 grid grid-cols-2 text-xs sm:text-sm font-sans">
+      <div className="mt-12 pt-6 border-t border-slate-300 grid grid-cols-2 text-xs sm:text-sm font-sans break-inside-avoid page-break-inside-avoid">
         <div className="text-center space-y-16">
           <div>
             <p className="text-slate-700">Mengetahui,</p>
