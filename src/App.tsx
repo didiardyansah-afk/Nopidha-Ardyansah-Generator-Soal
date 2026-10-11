@@ -37,6 +37,7 @@ import { TabelPenilaianView } from './components/TabelPenilaianView';
 import { EditQuestionModal } from './components/EditQuestionModal';
 import { ExportToolbar } from './components/ExportToolbar';
 import { DeveloperFooter } from './components/DeveloperFooter';
+import { printElementToPdf } from './utils/printPdf';
 
 type TabKey =
   | 'config'
@@ -206,7 +207,12 @@ export default function App() {
   };
 
   const handlePrint = () => {
-    window.print();
+    printElementToPdf({
+      elementId: 'printable-content',
+      documentTitle: getExportTitle(),
+      pageSize: 'A4',
+      orientation: 'portrait',
+    });
   };
 
   // Document title for exports

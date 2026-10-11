@@ -7,43 +7,76 @@
 
 @layer utilities {
   @media print {
-    body {
-      background-color: #ffffff !important;
-      color: #000000 !important;
-      font-size: 11pt !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
+    @page {
+      size: A4 portrait;
+      margin: 20mm 20mm 20mm 25mm; /* Atas 2cm, Kanan 2cm, Bawah 2cm, Kiri 2.5cm */
     }
 
-    .no-print {
+    *, *::before, *::after {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+      box-sizing: border-box !important;
+    }
+
+    html, body {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      font-size: 11pt !important;
+      line-height: 1.4 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+    }
+
+    /* Completely hide navigation, header, footer, action bars, toasts */
+    header,
+    footer,
+    nav,
+    .no-print,
+    button {
       display: none !important;
     }
 
+    /* Hide any siblings of the printable content container */
+    body > #root > div > main > div:not(#printable-content),
+    body > #root > div > header,
+    body > #root > div > footer {
+      display: none !important;
+    }
+
+    /* Ensure #printable-content is the only rendered output and takes full page width */
     #printable-content {
+      display: block !important;
       width: 100% !important;
+      max-width: 100% !important;
       margin: 0 !important;
       padding: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      background-color: #ffffff !important;
     }
 
-    .page-break-after {
-      page-break-after: always !important;
-      break-after: page !important;
-    }
-
-    .break-inside-avoid {
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-    }
-
+    /* Ensure tables, borders, and rows render accurately */
     table {
+      width: 100% !important;
+      border-collapse: collapse !important;
       page-break-inside: auto !important;
+    }
+
+    th {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+      border: 1px solid #475569 !important;
+    }
+
+    td {
+      border: 1px solid #64748b !important;
     }
 
     tr {
       page-break-inside: avoid !important;
-      page-break-after: auto !important;
+      break-inside: avoid !important;
     }
 
     thead {
@@ -52,6 +85,48 @@
 
     tfoot {
       display: table-footer-group !important;
+    }
+
+    .page-break-after {
+      page-break-after: always !important;
+      break-after: page !important;
+    }
+
+    .break-inside-avoid,
+    .group {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+
+    /* Preserve shading for student exam options, badges, and boxes */
+    .bg-slate-50,
+    .bg-slate-50\/80,
+    .bg-slate-50\/70 {
+      background-color: #f8fafc !important;
+    }
+
+    .bg-slate-100 {
+      background-color: #f1f5f9 !important;
+    }
+
+    .bg-indigo-50,
+    .bg-indigo-50\/60,
+    .bg-indigo-50\/70 {
+      background-color: #eef2ff !important;
+    }
+
+    .bg-emerald-50,
+    .bg-emerald-50\/60 {
+      background-color: #ecfdf5 !important;
+    }
+
+    .bg-amber-50,
+    .bg-amber-50\/50 {
+      background-color: #fffbeb !important;
+    }
+
+    .bg-blue-50 {
+      background-color: #eff6ff !important;
     }
   }
 }
