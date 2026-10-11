@@ -10,7 +10,8 @@ import {
   ChevronDown,
   Info,
   RotateCcw,
-  GraduationCap
+  GraduationCap,
+  Eye,
 } from 'lucide-react';
 import {
   ExamConfig,
@@ -26,6 +27,7 @@ interface ExamConfigFormProps {
   onChange: (updated: ExamConfig) => void;
   onGenerate: () => void;
   isGenerating: boolean;
+  onOpenVisualAnalysisModal?: () => void;
 }
 
 const QUESTION_COUNT_OPTIONS = [5, 10, 15, 20, 25, 30, 35, 50, 75, 100];
@@ -62,6 +64,7 @@ export const ExamConfigForm: React.FC<ExamConfigFormProps> = ({
   onChange,
   onGenerate,
   isGenerating,
+  onOpenVisualAnalysisModal,
 }) => {
   const [showPresets, setShowPresets] = useState(false);
 
@@ -424,27 +427,41 @@ export const ExamConfigForm: React.FC<ExamConfigFormProps> = ({
             </div>
           </div>
 
-          {config.sertakanGambar && (
-            <div className="flex items-center gap-2 pl-7 sm:pl-0">
-              <span className="text-xs font-semibold text-emerald-900 whitespace-nowrap">
-                Jumlah Soal Bergambar:
-              </span>
-              <input
-                type="number"
-                min={1}
-                max={Math.min(totalQuestionsRequested, 20)}
-                value={config.jumlahSoalBergambar}
-                onChange={(e) =>
-                  onChange({
-                    ...config,
-                    jumlahSoalBergambar: Math.max(1, parseInt(e.target.value) || 1),
-                  })
-                }
-                className="w-20 px-2.5 py-1 text-xs font-bold rounded-lg border border-emerald-300 bg-white text-emerald-900 text-center focus:ring-2 focus:ring-emerald-500"
-              />
-              <span className="text-xs text-emerald-800">butir</span>
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-3">
+            {config.sertakanGambar && (
+              <div className="flex items-center gap-2 pl-7 sm:pl-0">
+                <span className="text-xs font-semibold text-emerald-900 whitespace-nowrap">
+                  Jumlah Soal Bergambar:
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  max={Math.min(totalQuestionsRequested, 20)}
+                  value={config.jumlahSoalBergambar}
+                  onChange={(e) =>
+                    onChange({
+                      ...config,
+                      jumlahSoalBergambar: Math.max(1, parseInt(e.target.value) || 1),
+                    })
+                  }
+                  className="w-20 px-2.5 py-1 text-xs font-bold rounded-lg border border-emerald-300 bg-white text-emerald-900 text-center focus:ring-2 focus:ring-emerald-500"
+                />
+                <span className="text-xs text-emerald-800">butir</span>
+              </div>
+            )}
+
+            {onOpenVisualAnalysisModal && (
+              <button
+                type="button"
+                onClick={onOpenVisualAnalysisModal}
+                className="px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer hover:shadow-md"
+                title="Buka Generator Soal Analisis Visual (Identifikasi Bagian / Fungsi Diagram)"
+              >
+                <Eye className="w-3.5 h-3.5 text-emerald-300" />
+                <span>Buat Soal Analisis Visual</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ROW 5: LEVEL KOGNITIF (LOTS, MOTS, HOTS - DAPAT DIPILIH KETIGANYA) */}

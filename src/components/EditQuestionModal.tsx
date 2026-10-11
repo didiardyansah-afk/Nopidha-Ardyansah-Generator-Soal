@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Check, Trash2, Plus, Sparkles, Layers, Image as ImageIcon, Upload } from 'lucide-react';
+import { X, Check, Trash2, Plus, Sparkles, Layers, Image as ImageIcon, Upload, Eye } from 'lucide-react';
 import { QuestionItem, QuestionType, CognitiveLevel, LearningExperience, DifficultyLevel } from '../types';
 import { SCIENTIFIC_SVGS } from '../data/curriculumData';
+import { VISUAL_ANALYSIS_CATALOG } from '../utils/visualAnalysisGenerator';
 
 interface EditQuestionModalProps {
   question: QuestionItem | null;
@@ -18,7 +19,10 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
 }) => {
   if (!isOpen || !question) return null;
 
-  const [formData, setFormData] = useState<QuestionItem>({ ...question });
+  const [formData, setFormData] = useState<QuestionItem>({
+    ...question,
+    hasDiagram: Boolean(question.hasDiagram || question.gambarSvg || question.gambarUrl),
+  });
 
   const handleOptionChange = (idx: number, val: string) => {
     const nextPilihan = [...(formData.pilihan || [])];
@@ -43,6 +47,7 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
       reader.onload = () => {
         setFormData({
           ...formData,
+          hasDiagram: true,
           gambarUrl: reader.result as string,
           gambarSvg: undefined,
           gambarDeskripsi: formData.gambarDeskripsi || file.name.replace(/\.[^/.]+$/, ''),
@@ -87,6 +92,7 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
     if (svgMap[key]) {
       setFormData({
         ...formData,
+        hasDiagram: true,
         gambarSvg: svgMap[key].svg,
         gambarUrl: undefined,
         gambarDeskripsi: svgMap[key].desc,
@@ -94,9 +100,44 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
     }
   };
 
+  const handleApplyVisualAnalysisTemplate = (templateId: string) => {
+    const tmpl = VISUAL_ANALYSIS_CATALOG.find((t) => t.id === templateId);
+    if (!tmpl) return;
+
+    setFormData({
+      ...formData,
+      materi: tmpl.materi,
+      tujuanPembelajaran: tmpl.tujuanPembelajaran,
+      indikatorSoal: tmpl.indikatorSoal,
+      stimulus: tmpl.stimulus,
+      pertanyaan: tmpl.pertanyaan,
+      hasDiagram: true,
+      isVisualAnalysis: true,
+      visualTargetPart: tmpl.targetPart,
+      gambarSvg: SCIENTIFIC_SVGS[tmpl.diagramKey],
+      gambarUrl: undefined,
+      gambarDeskripsi: tmpl.gambarDeskripsi,
+      bentukSoal: tmpl.bentukSoal,
+      pilihan: tmpl.pilihan ? [...tmpl.pilihan] : formData.pilihan,
+      pilihanKompleks: tmpl.pilihanKompleks ? [...tmpl.pilihanKompleks] : formData.pilihanKompleks,
+      menjodohkanPairs: tmpl.menjodohkanPairs ? [...tmpl.menjodohkanPairs] : formData.menjodohkanPairs,
+      pernyataanBenarSalah: tmpl.pernyataanBenarSalah ? [...tmpl.pernyataanBenarSalah] : formData.pernyataanBenarSalah,
+      kunciJawaban: tmpl.kunciJawaban,
+      pembahasan: tmpl.pembahasan,
+      cognitiveLevel: tmpl.cognitiveLevel,
+      learningExperience: tmpl.learningExperience,
+      learningTargetExplanation: tmpl.learningTargetExplanation,
+      bobotSkor: tmpl.bobotSkor,
+      rubrikPenskoran: tmpl.rubrikPenskoran ? [...tmpl.rubrikPenskoran] : formData.rubrikPenskoran,
+    });
+  };
+
   const handleClearImage = () => {
     setFormData({
       ...formData,
+      hasDiagram: false,
+      isVisualAnalysis: false,
+      visualTargetPart: undefined,
       gambarSvg: undefined,
       gambarUrl: undefined,
       gambarDeskripsi: '',
@@ -105,7 +146,10 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    onSave({
+      ...formData,
+      hasDiagram: Boolean(formData.hasDiagram || formData.gambarSvg || formData.gambarUrl),
+    });
     onClose();
   };
 
@@ -344,6 +388,30 @@ export const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
                   <option value="fotosintesisIngenhousz">Percobaan Fotosintesis Ingenhousz</option>
                 </select>
               </div>
+            </div>
+
+            {/* Quick Visual Analysis Template Selector */}
+            <div className="pt-2 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-emerald-50/60 p-2.5 rounded-lg border border-emerald-200">
+              <div className="flex items-center gap-1.5">
+                <Eye className="w-4 h-4 text-emerald-700" />
+                <span className="text-xs font-bold text-emerald-950">
+                  Terapkan Template Soal Analisis Visual:
+                </span>
+              </div>
+              <select
+                onChange={(e) => {
+                  if (e.target.value) handleApplyVisualAnalysisTemplate(e.target.value);
+                }}
+                defaultValue=""
+                className="px-2.5 py-1 text-xs font-semibold rounded border border-emerald-300 bg-white text-emerald-900 focus:ring-1 focus:ring-emerald-500"
+              >
+                <option value="" disabled>-- Muat Pertanyaan & Kunci Lengkap --</option>
+                {VISUAL_ANALYSIS_CATALOG.map((tmpl) => (
+                  <option key={tmpl.id} value={tmpl.id}>
+                    {tmpl.title} ({tmpl.targetPart})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

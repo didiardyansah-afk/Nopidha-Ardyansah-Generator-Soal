@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SchoolIdentity, QuestionItem, QuestionType } from '../types';
 import { KopSurat } from './KopSurat';
-import { Edit3, Trash2, Plus, Sparkles, Image as ImageIcon, Eye, Edit } from 'lucide-react';
+import { Edit3, Trash2, Plus, Sparkles, Image as ImageIcon, Eye, Edit, RotateCcw } from 'lucide-react';
 
 interface NaskahSoalViewProps {
   schoolInfo: SchoolIdentity;
@@ -9,6 +9,7 @@ interface NaskahSoalViewProps {
   onEditQuestion: (q: QuestionItem) => void;
   onDeleteQuestion: (id: string) => void;
   onAddNewQuestion: () => void;
+  onResetQuestions?: () => void;
 }
 
 export const NaskahSoalView: React.FC<NaskahSoalViewProps> = ({
@@ -17,6 +18,7 @@ export const NaskahSoalView: React.FC<NaskahSoalViewProps> = ({
   onEditQuestion,
   onDeleteQuestion,
   onAddNewQuestion,
+  onResetQuestions,
 }) => {
   // Mode toggle: Clean Student Preview vs Teacher Admin Editor
   const [isCleanPreview, setIsCleanPreview] = useState(false);
@@ -78,13 +80,26 @@ export const NaskahSoalView: React.FC<NaskahSoalViewProps> = ({
           </button>
 
           {!isCleanPreview && (
-            <button
-              onClick={onAddNewQuestion}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors shadow-2xs cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Tambah Butir Soal</span>
-            </button>
+            <>
+              <button
+                onClick={onAddNewQuestion}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors shadow-2xs cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Tambah Butir Soal</span>
+              </button>
+
+              {onResetQuestions && (
+                <button
+                  onClick={onResetQuestions}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-semibold transition-colors shadow-2xs cursor-pointer"
+                  title="Reset atau kembalikan ke paket soal preset awal"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Reset Soal</span>
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -92,8 +107,32 @@ export const NaskahSoalView: React.FC<NaskahSoalViewProps> = ({
       {/* List of Questions */}
       <div className="space-y-6 pt-2">
         {questions.length === 0 ? (
-          <div className="text-center py-12 text-slate-400">
-            Belum ada butir soal. Silakan klik buat soal pada panel konfigurasi.
+          <div className="text-center py-16 px-4 bg-slate-50/70 border border-dashed border-slate-300 rounded-2xl my-4">
+            <RotateCcw className="w-8 h-8 text-slate-400 mx-auto mb-3" />
+            <h4 className="text-sm font-bold text-slate-700 mb-1">
+              Naskah Soal Masih Kosong
+            </h4>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
+              Belum ada butir soal terdaftar. Anda dapat memulihkan bank soal standar awal atau membuat soal baru.
+            </p>
+            <div className="flex items-center justify-center gap-2.5">
+              {onResetQuestions && (
+                <button
+                  onClick={onResetQuestions}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Pulihkan Soal Preset Awal</span>
+                </button>
+              )}
+              <button
+                onClick={onAddNewQuestion}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Soal Manual</span>
+              </button>
+            </div>
           </div>
         ) : (
           questions.map((q, idx) => (
@@ -129,6 +168,13 @@ export const NaskahSoalView: React.FC<NaskahSoalViewProps> = ({
                       <span className="no-print text-[11px] font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
                         {q.learningExperience}
                       </span>
+                      {(q.hasDiagram || q.gambarSvg || q.gambarUrl) && (
+                        <span className="no-print text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                          <Eye className="w-3 h-3 text-emerald-700" />
+                          {q.isVisualAnalysis ? 'Analisis Visual' : 'Diagram'}
+                          {q.visualTargetPart ? `: ${q.visualTargetPart}` : ''}
+                        </span>
+                      )}
                       <span className="no-print text-[11px] text-slate-500">
                         Bobot: {q.bobotSkor} poin
                       </span>

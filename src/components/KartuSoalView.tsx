@@ -108,9 +108,17 @@ export const KartuSoalView: React.FC<KartuSoalViewProps> = ({
 
         {/* Rumusan Butir Soal */}
         <div className="py-3 text-xs sm:text-sm border-b border-slate-300">
-          <span className="font-bold text-slate-900 block mb-1.5 uppercase text-xs tracking-wider">
-            RUMUSAN BUTIR SOAL:
-          </span>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="font-bold text-slate-900 uppercase text-xs tracking-wider">
+              RUMUSAN BUTIR SOAL:
+            </span>
+            {(q.hasDiagram || q.gambarSvg || q.gambarUrl) && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                {q.isVisualAnalysis ? 'Analisis Visual' : 'Stimulus Diagram'}
+                {q.visualTargetPart ? `: ${q.visualTargetPart}` : ''}
+              </span>
+            )}
+          </div>
 
           {q.stimulus && (
             <div className="p-2.5 rounded bg-slate-50 border-l-4 border-indigo-500 mb-2.5 text-xs text-slate-700 italic">

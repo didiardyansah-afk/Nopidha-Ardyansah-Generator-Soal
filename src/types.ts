@@ -53,6 +53,9 @@ export interface QuestionItem {
   indikatorSoal: string;
   stimulus?: string; // Bacaan, data tabel, atau konteks sains
   pertanyaan: string;
+  hasDiagram?: boolean; // True jika soal dilengkapi diagram/gambar ilmiah
+  isVisualAnalysis?: boolean; // True untuk soal Analisis Visual (identifikasi bagian / fungsi)
+  visualTargetPart?: string; // Label bagian yang dianalisis (misal: "Bagian X / Lensa Okuler")
   gambarSvg?: string; // Diagram/ilustrasi ilmiah dalam SVG
   gambarUrl?: string; // URL atau data:image base64 gambar yang diunggah pengguna
   gambarDeskripsi?: string;

@@ -75,7 +75,15 @@ export const KisiKisiView: React.FC<KisiKisiViewProps> = ({
                   {schoolInfo.kelas} / {schoolInfo.semester === 'Ganjil' ? '1' : '2'}
                 </td>
                 <td className="border border-slate-400 p-2 leading-relaxed">
-                  {q.indikatorSoal}
+                  <div className="flex flex-col gap-1">
+                    <span>{q.indikatorSoal}</span>
+                    {(q.hasDiagram || q.isVisualAnalysis) && (
+                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-800 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 self-start">
+                        📷 {q.isVisualAnalysis ? 'Stimulus Analisis Visual' : 'Stimulus Bergambar'}
+                        {q.visualTargetPart ? ` (${q.visualTargetPart})` : ''}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="border border-slate-400 p-2 text-center font-bold">
                   <span

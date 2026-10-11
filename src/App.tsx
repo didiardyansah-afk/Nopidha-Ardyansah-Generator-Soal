@@ -11,7 +11,8 @@ import {
   AlertCircle,
   RotateCcw,
   Sparkles,
-  Download
+  Download,
+  Eye
 } from 'lucide-react';
 import {
   SchoolIdentity,
@@ -35,6 +36,8 @@ import { KartuSoalView } from './components/KartuSoalView';
 import { NormaPenilaianView } from './components/NormaPenilaianView';
 import { TabelPenilaianView } from './components/TabelPenilaianView';
 import { EditQuestionModal } from './components/EditQuestionModal';
+import { VisualAnalysisModal } from './components/VisualAnalysisModal';
+import { ResetConfirmModal } from './components/ResetConfirmModal';
 import { ExportToolbar } from './components/ExportToolbar';
 import { DeveloperFooter } from './components/DeveloperFooter';
 import { printElementToPdf } from './utils/printPdf';
@@ -74,6 +77,12 @@ export default function App() {
   const [editingQuestion, setEditingQuestion] = useState<QuestionItem | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  // Visual Analysis Modal state
+  const [isVisualModalOpen, setIsVisualModalOpen] = useState(false);
+
+  // Reset confirmation modal state
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+
   // Sync to localStorage
   useEffect(() => {
     localStorage.setItem('sip_ipa_school_info', JSON.stringify(schoolInfo));
@@ -90,6 +99,38 @@ export default function App() {
   const showNotification = (msg: string) => {
     setNotification(msg);
     setTimeout(() => setNotification(null), 4000);
+  };
+
+  const handleApplyVisualAnalysisQuestions = (
+    newQuestions: QuestionItem[],
+    mode: 'replace' | 'append'
+  ) => {
+    if (mode === 'replace') {
+      const formatted = newQuestions.map((q, idx) => ({
+        ...q,
+        nomor: idx + 1,
+        hasDiagram: true,
+        isVisualAnalysis: true,
+      }));
+      setQuestions(formatted);
+      setActiveTab('naskah');
+      showNotification(
+        `Berhasil menyusun ${formatted.length} butir soal Analisis Visual (Identifikasi Bagian & Fungsi)!`
+      );
+    } else {
+      const currentLen = questions.length;
+      const formatted = newQuestions.map((q, idx) => ({
+        ...q,
+        nomor: currentLen + idx + 1,
+        hasDiagram: true,
+        isVisualAnalysis: true,
+      }));
+      setQuestions([...questions, ...formatted]);
+      setActiveTab('naskah');
+      showNotification(
+        `Berhasil menambahkan ${formatted.length} butir soal Analisis Visual ke naskah soal!`
+      );
+    }
   };
 
   // Generate Questions via Backend Gemini API
@@ -147,11 +188,15 @@ export default function App() {
             svg = item.svg;
             if (!deskripsi) deskripsi = item.desc;
           }
+
+          const isDiagramAttached = Boolean(svg || q.gambarUrl);
           return {
             ...q,
             gambarSvg: svg,
             gambarDeskripsi: deskripsi,
             nomor: i + 1,
+            hasDiagram: q.hasDiagram || isDiagramAttached,
+            isVisualAnalysis: q.isVisualAnalysis || (isDiagramAttached ? true : false),
           };
         });
 
@@ -223,13 +268,24 @@ export default function App() {
     handleOpenEdit(newQ);
   };
 
-  const handleResetToDefault = () => {
-    if (confirm('Kembalikan ke paket soal preset awal IPA SMP?')) {
-      setQuestions(INITIAL_PRESET_QUESTIONS);
-      setExamConfig(DEFAULT_EXAM_CONFIG);
-      setSchoolInfo(DEFAULT_SCHOOL_INFO);
-      showNotification('Data telah direset ke preset awal.');
-    }
+  const handleConfirmResetPreset = () => {
+    setQuestions(INITIAL_PRESET_QUESTIONS);
+    setExamConfig(DEFAULT_EXAM_CONFIG);
+    setSchoolInfo(DEFAULT_SCHOOL_INFO);
+    localStorage.removeItem('sip_ipa_questions');
+    localStorage.removeItem('sip_ipa_exam_config');
+    localStorage.removeItem('sip_ipa_school_info');
+    showNotification('Paket soal berhasil direset ke bank soal baku IPA SMP (10 Butir Lengkap)!');
+  };
+
+  const handleConfirmClearAll = () => {
+    setQuestions([]);
+    localStorage.setItem('sip_ipa_questions', JSON.stringify([]));
+    showNotification('Seluruh butir soal telah dikosongkan. Silakan buat soal baru atau gunakan generator.');
+  };
+
+  const handleOpenResetModal = () => {
+    setIsResetModalOpen(true);
   };
 
   const handlePrint = () => {
@@ -374,14 +430,25 @@ export default function App() {
               </button>
             </nav>
 
-            <button
-              onClick={handleResetToDefault}
-              className="text-xs text-slate-500 hover:text-slate-700 flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-slate-200/60 transition-colors"
-              title="Reset ke paket soal awal"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Soal</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsVisualModalOpen(true)}
+                className="text-xs font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                title="Buka Generator Soal Analisis Visual (Identifikasi Bagian & Fungsi)"
+              >
+                <Eye className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Soal Analisis Visual</span>
+              </button>
+
+              <button
+                onClick={handleOpenResetModal}
+                className="text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                title="Buka menu reset paket soal"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-amber-700" />
+                <span>Reset Soal</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -407,6 +474,7 @@ export default function App() {
                 onChange={setExamConfig}
                 onGenerate={handleGenerateQuestions}
                 isGenerating={isGenerating}
+                onOpenVisualAnalysisModal={() => setIsVisualModalOpen(true)}
               />
             </div>
           )}
@@ -418,6 +486,7 @@ export default function App() {
               onEditQuestion={handleOpenEdit}
               onDeleteQuestion={handleDeleteQuestion}
               onAddNewQuestion={handleAddNewQuestion}
+              onResetQuestions={handleOpenResetModal}
             />
           )}
 
@@ -475,6 +544,23 @@ export default function App() {
         question={editingQuestion}
         onClose={() => setIsEditModalOpen(false)}
         onSave={handleSaveQuestion}
+      />
+
+      {/* Visual Analysis Question Generator Modal */}
+      <VisualAnalysisModal
+        isOpen={isVisualModalOpen}
+        onClose={() => setIsVisualModalOpen(false)}
+        onApplyQuestions={handleApplyVisualAnalysisQuestions}
+        currentQuestionCount={questions.length}
+      />
+
+      {/* Reset Confirmation Modal */}
+      <ResetConfirmModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirmResetPreset={handleConfirmResetPreset}
+        onConfirmClearAll={handleConfirmClearAll}
+        totalQuestions={questions.length}
       />
 
       {/* Developer Honor Footer */}

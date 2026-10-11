@@ -107,7 +107,7 @@ Kembalikan output HANYA dalam format JSON valid yang dapat di-JSON.parse(), tanp
 ${bentukSoalDipilih.map((b: string) => `  * ${b}: ${jumlahSoalPerBentuk[b] || 5} butir`).join('\n')}
 - Level Kognitif: ${cognitiveLevelsDipilih.join(', ')}
 - Target Pengalaman Belajar: ${learningExperiencesDipilih.join(', ')}
-- Soal Bergambar: ${sertakanGambar ? `Ya, sediakan minimal ${jumlahSoalBergambar} butir soal dengan stimulus diagram ilmiah / gambar deskriptif (sertakan deskripsi visual yang jelas).` : 'Tidak'}
+- Soal Bergambar / Visual Analysis: ${sertakanGambar ? `Ya, sediakan minimal ${jumlahSoalBergambar} butir soal Analisis Visual di mana siswa harus mengidentifikasi bagian organ/instrumen atau fungsinya secara spesifik berdasarkan diagram, dengan "hasDiagram": true, "isVisualAnalysis": true, dan deskripsi visual yang jelas.` : 'Tidak'}
 
 FORMAT JSON YANG DIHARAPKAN:
 {
@@ -124,6 +124,9 @@ FORMAT JSON YANG DIHARAPKAN:
       "indikatorSoal": "Disajikan...",
       "stimulus": "Teks pengantar atau kasus...",
       "pertanyaan": "Pertanyaan soal...",
+      "hasDiagram": true,
+      "isVisualAnalysis": true,
+      "visualTargetPart": "Label Bagian (misal: Bagian X)",
       "gambarDeskripsi": "Deskripsi visual diagram jika soal bergambar (kosongkan jika tidak)",
       "pilihan": ["A. ...", "B. ...", "C. ...", "D. ..."],
       "pilihanKompleks": [{"text": "Pernyataan...", "isCorrect": true}],
@@ -171,6 +174,8 @@ FORMAT JSON YANG DIHARAPKAN:
       id: q.id || `ai-q-${Date.now()}-${idx + 1}`,
       nomor: idx + 1,
       bobotSkor: q.bobotSkor || (q.bentukSoal === 'uraian' ? 5 : q.bentukSoal === 'pilihan_ganda' ? 1 : 2),
+      hasDiagram: q.hasDiagram || Boolean(q.gambarSvg || q.gambarDeskripsi || q.gambarUrl),
+      isVisualAnalysis: q.isVisualAnalysis || Boolean(q.visualTargetPart),
     }));
 
     return res.status(200).json({
@@ -241,6 +246,9 @@ function generateLocalQuestions(config: any) {
           indikatorSoal: `Peserta didik mampu ${exp.toLowerCase()} konsep ${topikMateri.split(',')[0] || 'IPA'} berdasarkan stimulus fenomena fisis/biologis.`,
           stimulus: `Dua orang siswa SMP melakukan eksperimen laboratorium untuk membuktikan keterkaitan besaran fisis dan biologis pada materi ${topikMateri}.`,
           pertanyaan: `Berdasarkan pengamatan pada materi ${topikMateri}, manakah pernyataan yang paling tepat mengenai hubungan variabel yang terjadi?`,
+          hasDiagram: hasImage,
+          isVisualAnalysis: hasImage,
+          visualTargetPart: hasImage ? 'Bagian Instrumen Percobaan & Variabel Terikat' : undefined,
           gambarDeskripsi: hasImage ? `Diagram skematis alat percobaan IPA dan grafik hubungan variabel pada materi ${topikMateri}.` : undefined,
           pilihan: [
             `A. Nilai variabel berbanding lurus secara proporsional dengan peningkatan energi sistem`,
